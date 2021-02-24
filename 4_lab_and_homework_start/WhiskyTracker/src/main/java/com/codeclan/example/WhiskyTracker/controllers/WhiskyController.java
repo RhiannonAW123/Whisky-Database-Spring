@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,18 +47,38 @@ public class WhiskyController {
 
     @GetMapping(value = "/whiskies")
     public ResponseEntity<List<Whisky>> findWhiskysFilteredByYear(
-            @RequestParam(name = "year", required = false) Integer year) {
-       if (year != null) {
+            @RequestParam(name = "year", required = false) Integer year,
+            @RequestParam(name = "age", required = false) Integer age,
+            @RequestParam(name = "distillery", required = false) String distillery)
+    {
+       if (year != null ) {
            return new ResponseEntity<>(whiskyRepository.findByYear(year), HttpStatus.OK);
+       } else if (age != null ){
+           return new ResponseEntity(whiskyRepository.findByAge(age), HttpStatus.OK);
+    } else if (distillery != null ){
+           return new ResponseEntity(whiskyRepository.findWhiskyByDistilleryName(distillery), HttpStatus.OK);
+       } else if (distillery != null && age != null) {
+           List<Whisky> foundwhiskies = new ArrayList<Whisky>();
+           List<Whisky> foundwhiskiesByDistillery = whiskyRepository.findWhiskyByDistilleryName(distillery);
+           for (Whisky whisky : foundwhiskiesByDistillery){
+               if(whisky.getAge() == age){
+                   foundwhiskies.add(whisky);
+               }
+           }
+
+           return new ResponseEntity(foundwhiskies, HttpStatus.OK);
        }
+
+
        return new ResponseEntity<>(whiskyRepository.findAll(), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/whiskies/distilleries")
-    public ResponseEntity<List<Whisky>> findWhiskiesThatHaveDistilleriesWithAgeInt(
-            @RequestParam(name = "age") Integer age) {
-        return new ResponseEntity<>(whiskyRepository.findByAge(age), HttpStatus.OK);
-    }
+//    @GetMapping(value = "/whiskies/distilleries")
+//    public ResponseEntity<List<Whisky>> findWhiskiesThatHaveDistilleriesWithAgeInt(
+//            @RequestParam(name = "age") Integer age)
+//    {
+//        return new ResponseEntity<>(whiskyRepository.findByAge(age), HttpStatus.OK);
+//    }
 
 
 }
